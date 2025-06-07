@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import FormField from "./FormField";
-import { email } from "zod/v4";
 
 // Define a specific type for the form mode
 
@@ -64,7 +63,7 @@ const AuthForm = ({ type }: { type: string }) => {
         <h4 className="text-center">Ai assistence for your inteveiw prep</h4>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit)}  
             className="w-full lg:w-[85%] space-y-6 form mt-6 mx-auto"
           >
             {!isSignIn && (

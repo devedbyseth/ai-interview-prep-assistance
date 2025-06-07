@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate"; 
+@plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -285,7 +285,7 @@
   }
 
   .card-interview {
-    @apply dark-gradient rounded-2xl min-h-full flex flex-col p-6 relative overflow-hidden gap-10 justify-between;
+    @apply dark-gradient rounded-2xl min-h-full flex flex-col p-6 relative overflow-hidden gap-4 justify-between;
 
     .badge-text {
       @apply text-sm font-semibold capitalize;
@@ -331,7 +331,6 @@
     transform: translateY(0);
   }
 }
-
 
 /* 
 @custom-variant dark (&:is(.dark *));
