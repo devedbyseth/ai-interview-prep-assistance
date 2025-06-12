@@ -11,9 +11,12 @@ import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import FormField from "./FormField";
 import { signIn, signUp } from "@/actions/auth.actions";
-import { createUserWithEmailAndPassword,signInWithEmailAndPassword,deleteUser} from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  deleteUser,
+} from "firebase/auth";
 import { auth } from "@/firebase/client";
-
 
 // Define a specific type for the form mode
 
@@ -40,57 +43,42 @@ const AuthForm = ({ type }: { type: string }) => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { name, email, password } = values;
-    try {
-      //Handle Sign up
-      if (type === "sign-up") {
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        const user = userCredential.user;
-        const result = await signUp({
-          uid: user.uid,
-          name: name ?? "",
-          email,
-          password
-        });
-        if(!result.success) throw {code: "firestore-failed"};
-        toast.success("Successfully Sign Up");
-        router.push("/sign-in");
-        return;
-      }
-
-      //Handle sign in
-      const userCredential = await signInWithEmailAndPassword(
+    //Handle Sign up
+    try{
+if (type === "sign-up") {
+      const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
       const user = userCredential.user;
-      const idToken = await user.getIdToken();
-      const result = await signIn({email, idToken});
-      if(!result.success) throw {code: "firestore-failed"};
-      toast.success("Successfully Sign In");
-      router.push("/");
-
-      //handle error
-    } catch (error: any) {
-      console.log("error code: ",error);
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          toast.error("Email already in use");
-          break;
-        case "auth/invalid-credential":
-          toast.error("Invalid email or password");
-          break;
-        case "firestore-failed":
-          toast.error("Something went wrong. Please try again later.");
-          break;
-        default:
-          toast.error(error.code);
-      }
+      const result = await signUp({
+        uid: user.uid,
+        name: name!,
+        email,
+        password,
+      });
+      toast.success(result.message);
+      router.push("/sign-in");
+      return;
     }
+
+    //Handle sign in
+    const userCredential = await signInWithEmailAndPassword( auth, email, password);
+    const user = userCredential.user;
+    const idToken = await user.getIdToken();  
+    const result = await signIn(idToken);
+    toast.success(result.message);
+    router.push("/");
+    return;
+    }catch(error: any){
+      if(error.code === "auth/wrong-password" || error.code === "auth/invalid-credential"){
+        toast.error("Invalid email or password");
+        return;
+      }
+      toast.error("Something went wrong. Please try again later");
+      return;
+    } 
   }
 
   const isSignIn = type === "sign-in";

@@ -2,13 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
-import { getUser } from "@/actions/auth.actions";
+import { getCurrentUser, isUserAuthenticated } from "@/actions/auth.actions";
 import AuthButton from "@/components/AuthButton";
+import { redirect } from "next/navigation";
 
 
 const rootLayout = async ({ children }: { children: React.ReactNode }) => {
-  const user = await getUser();
-  console.log("user: ");
+  if(!(await isUserAuthenticated())) redirect("/sign-in");
+  const user = await getCurrentUser();
   return (
     <div className="root-layout">
       <nav className="flex justify-between">

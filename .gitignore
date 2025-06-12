@@ -41,3 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 advance-prep-firebase-adminsdk-fbsvc-d322091594.json
+
+mid.ts

@@ -2,65 +2,50 @@
 
 import { db, auth } from "@/firebase/admin";
 import { cookies } from "next/headers";
-import { db as userDb } from "@/firebase/client";
-import { getDoc, doc } from "firebase/firestore";
+
 
 export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
   try {
-    console.log("server uid: ", uid);
     const user = await db.collection("users").doc(uid).get();
-    console.log("user: ", user.exists);
     if (user.exists) {
-      console.log("user exist: ", user.exists);
       return {
         success: false,
-        code: "auth/email-already-in-use",
+        message: "Email already exists.",
       };
     }
 
-    const newUser = await db
-      .collection("users")
-      .doc(uid)
-      .set({ name, email, password });
-    console.log("user with ", uid, "have been created");
+    await db.collection("users").doc(uid).set({ name, email, password });
     return {
       success: true,
+      message: "Signed up successfully. Please sign in.",
     };
   } catch (error: any) {
     auth.deleteUser(uid);
-    console.log("user with ", uid, "have been deleted");
-    console.log("firestore error: ", error);
+    if (error.code === "auth/email-already-in-use") {
+      return {
+        success: false,
+        message: "Email already exists.",
+      };
+    }
     return {
       success: false,
-      error: "firestore-failed",
-      code: error.code || null,
-      message: error.message ?? "Unknown firestore error",
-      details: error.stact ?? null,
+      message: "Failed to sign up. Please try again later.",
     };
   }
 };
 
-export const signIn = async ({ email, idToken }: SignInParams) => {
+export const signIn = async (idToken: string) => {
   try {
-    const expiresIn = 60 * 60 * 24 * 1 * 1000;
-
-    const sessionCookie = await auth.createSessionCookie(idToken, {
-      expiresIn,
-    });
-    (await cookies()).set("session", sessionCookie, {
-      maxAge: expiresIn / 1000,
-      path: "/",
-      httpOnly: true,
-      secure: true,
-    });
+    await createSessionCookie(idToken);
     return {
       success: true,
+      message: "Signed in successfully."
     };
   } catch (error) {
     console.log("error: ", error);
     return {
       success: false,
-      code: "auth/invalid-credential",
+      message: "Failed to Sign In. Please try again.",
     };
   }
 };
@@ -71,7 +56,7 @@ export const signOut = async () => {
       maxAge: 0,
       path: "/",
     });
-    console.log("cookie deleted")
+    console.log("cookie deleted");
     return {
       success: true,
     };
@@ -83,31 +68,46 @@ export const signOut = async () => {
   }
 };
 
-export const getUser = async () => {
+export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const sessionCookie = (await cookies()).get("session")?.value;
-    if (sessionCookie) {
-      const decodeClaim = await auth.verifySessionCookie(sessionCookie);
-      const user = await db.collection("users").doc(decodeClaim.uid).get();
-      return user.data();
-    }
+
+    if (!sessionCookie) return null;
+
+    const decodeClaim = await auth.verifySessionCookie(sessionCookie);
+    const user = await db.collection("users").doc(decodeClaim.uid).get();
+    const userRecord = user.data();
+
+    if(!userRecord) return null;
+
+    return { ...userRecord,id: user.id } as User;
+    
   } catch (error) {
-    console.log("error.....................", error);
+    console.log("error: ", error);
     return null;
   }
 };
 
-export const verifyCookie = async (cookie: string) => {
+export const isUserAuthenticated = async () => {
+  const user = await getCurrentUser();
+  return !!user;
+};
+
+const createSessionCookie = async (idToken: string) => {
   try {
-    const decodeClaim = await auth.verifySessionCookie(cookie, true);
-    return {
-      success: true,
-      uid: decodeClaim.uid,
-    };
+    const cookieStore = await cookies();
+    const expiresIn = 60 * 60 * 24 * 1 * 1000;
+    const sessionCookie = await auth.createSessionCookie(idToken, {
+      expiresIn,
+    });
+
+    cookieStore.set("session", sessionCookie, {
+      maxAge: expiresIn / 1000,
+      path: "/",
+      httpOnly: true,
+      secure: true,
+    });
   } catch (error) {
     console.log("error: ", error);
-    return {
-      success: false,
-    };
   }
 };
