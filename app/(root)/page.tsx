@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { dummyInterviews } from "@/constants";
 import InterviewCard from "@/components/InterviewCard";
 
-const Page = () => {
+const Page = async () => {
   return (
     <div>
       <section className="card-cta">

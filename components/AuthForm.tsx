@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useId } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -10,19 +10,23 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import FormField from "./FormField";
+import { signIn, signUp } from "@/actions/auth.actions";
+import { createUserWithEmailAndPassword,signInWithEmailAndPassword,deleteUser} from "firebase/auth";
+import { auth } from "@/firebase/client";
+
 
 // Define a specific type for the form mode
 
 const formValidate = ({ type }: { type: string }) => {
   return z.object({
-    name: type === "sign-up" ?  z.string().min(3) : z.string().optional(),
+    name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
     email: z.string().email(),
-    password: z.string().min(3),
+    password: z.string().min(6),
   });
 };
 
 const AuthForm = ({ type }: { type: string }) => {
-  const formSchema = formValidate({type});
+  const formSchema = formValidate({ type });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,20 +38,58 @@ const AuthForm = ({ type }: { type: string }) => {
 
   const router = useRouter();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { name, email, password } = values;
     try {
+      //Handle Sign up
       if (type === "sign-up") {
-        console.log("hi");
-        toast.success("Successfully Sing Up");
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const user = userCredential.user;
+        const result = await signUp({
+          uid: user.uid,
+          name: name ?? "",
+          email,
+          password
+        });
+        if(!result.success) throw {code: "firestore-failed"};
+        toast.success("Successfully Sign Up");
         router.push("/sign-in");
         return;
       }
-      console.log("Hi");
-      toast.success("Successfully Sing In");
+
+      //Handle sign in
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const idToken = await user.getIdToken();
+      const result = await signIn({email, idToken});
+      if(!result.success) throw {code: "firestore-failed"};
+      toast.success("Successfully Sign In");
       router.push("/");
-    } catch (error) {
-      alert("Error");
-      toast.error(`Error: ${error}`);
+
+      //handle error
+    } catch (error: any) {
+      console.log("error code: ",error);
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          toast.error("Email already in use");
+          break;
+        case "auth/invalid-credential":
+          toast.error("Invalid email or password");
+          break;
+        case "firestore-failed":
+          toast.error("Something went wrong. Please try again later.");
+          break;
+        default:
+          toast.error(error.code);
+      }
     }
   }
 
@@ -63,7 +105,7 @@ const AuthForm = ({ type }: { type: string }) => {
         <h4 className="text-center">Ai assistence for your inteveiw prep</h4>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}  
+            onSubmit={form.handleSubmit(onSubmit)}
             className="w-full lg:w-[85%] space-y-6 form mt-6 mx-auto"
           >
             {!isSignIn && (
