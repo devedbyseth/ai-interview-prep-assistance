@@ -6,13 +6,13 @@ import { cookies } from "next/headers";
 
 export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
   try {
-    const user = await db.collection("users").doc(uid).get();
-    if (user.exists) {
-      return {
-        success: false,
-        message: "Email already exists.",
-      };
-    }
+    // const user = await db.collection("users").doc(uid).get();
+    // if (user.exists) {
+    //   return {
+    //     success: false,
+    //     message: "Email already exists.",
+    //   };
+    // }
 
     await db.collection("users").doc(uid).set({ name, email, password });
     return {
@@ -20,13 +20,13 @@ export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
       message: "Signed up successfully. Please sign in.",
     };
   } catch (error: any) {
-    auth.deleteUser(uid);
-    if (error.code === "auth/email-already-in-use") {
-      return {
-        success: false,
-        message: "Email already exists.",
-      };
-    }
+    // auth.deleteUser(uid);
+    // if (error.code === "auth/email-already-in-use") {
+    //   return {
+    //     success: false,
+    //     message: "Email already exists.",
+    //   };
+    // }
     return {
       success: false,
       message: "Failed to sign up. Please try again later.",
@@ -36,7 +36,8 @@ export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
 
 export const signIn = async (idToken: string) => {
   try {
-    await createSessionCookie(idToken);
+    const result = await createSessionCookie(idToken);
+    if(!result.success) throw new Error("Failed to create session cookie")
     return {
       success: true,
       message: "Signed in successfully."
@@ -107,7 +108,13 @@ const createSessionCookie = async (idToken: string) => {
       httpOnly: true,
       secure: true,
     });
+    return {
+      success: true,
+    }
   } catch (error) {
     console.log("error: ", error);
+    return {
+      success: false,
+    };
   }
 };

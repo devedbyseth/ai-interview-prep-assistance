@@ -46,11 +46,7 @@ const AuthForm = ({ type }: { type: string }) => {
     //Handle Sign up
     try{
 if (type === "sign-up") {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword( auth, email, password );
       const user = userCredential.user;
       const result = await signUp({
         uid: user.uid,
@@ -76,6 +72,11 @@ if (type === "sign-up") {
         toast.error("Invalid email or password");
         return;
       }
+      if(error.code === "auth/email-already-in-use"){
+        toast.error("Email already in use.");
+        return;
+      }
+      console.log(error.code)
       toast.error("Something went wrong. Please try again later");
       return;
     } 
