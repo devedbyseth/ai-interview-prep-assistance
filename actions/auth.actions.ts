@@ -6,13 +6,14 @@ import { cookies } from "next/headers";
 
 export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
   try {
-    // const user = await db.collection("users").doc(uid).get();
+    // this was for when the signUpWithEmailAndPassword() not working or sth wrong with the code around it in the front end file related to this.
+    // <<< const user = await db.collection("users").doc(uid).get();
     // if (user.exists) {
     //   return {
     //     success: false,
     //     message: "Email already exists.",
     //   };
-    // }
+    // } >>>
 
     await db.collection("users").doc(uid).set({ name, email, password });
     return {
@@ -20,6 +21,9 @@ export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
       message: "Signed up successfully. Please sign in.",
     };
   } catch (error: any) {
+
+    //  this too
+
     // auth.deleteUser(uid);
     // if (error.code === "auth/email-already-in-use") {
     //   return {
@@ -53,11 +57,10 @@ export const signIn = async (idToken: string) => {
 
 export const signOut = async () => {
   try {
-    const res = (await cookies()).set("session", "", {
+    (await cookies()).set("session", "", {
       maxAge: 0,
       path: "/",
     });
-    console.log("cookie deleted");
     return {
       success: true,
     };

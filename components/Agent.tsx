@@ -20,7 +20,7 @@ const Agent = ({ userName, type }: AgentProps) => {
       <div className="call-view">
         <div className="card-interviewer">
           <div className="avatar">
-            <Image
+          <Image
               src="/ai-avatar.png"
               width={65}
               height={100}
