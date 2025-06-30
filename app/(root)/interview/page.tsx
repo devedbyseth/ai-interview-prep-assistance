@@ -1,8 +1,8 @@
 import { getCurrentUser } from "@/actions/auth.actions";
 import Agent from "@/components/Agent";
 
-const Page = async () => {
-  const user = await getCurrentUser();
+const Page =  () => {
+  const user = {name: "Static"}
   return (
     <div>
       <h3 className="">Your Interview</h3>

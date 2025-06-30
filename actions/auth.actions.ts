@@ -3,7 +3,6 @@
 import { db, auth } from "@/firebase/admin";
 import { cookies } from "next/headers";
 
-
 export const signUp = async ({ uid, name, email, password }: SignUpParams) => {
   try {
     // this was for when the signUpWithEmailAndPassword() not working or sth wrong with the code around it in the front end file related to this.

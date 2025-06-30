@@ -4,8 +4,8 @@ import { db } from "@/firebase/admin";
 import { getCurrentUser } from '@/actions/auth.actions';
 
 export async function GET(){
-    
-    return Response.json({status: 200, message: "Success"});
+    const user = await getCurrentUser();
+    return Response.json({status: 200, message: "Success", user});
 }
 
 

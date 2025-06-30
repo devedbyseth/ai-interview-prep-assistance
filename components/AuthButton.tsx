@@ -9,6 +9,7 @@ export default function AuthButton({ user }: any) {
   async function handleSignOut() {
     const result = await signOut();
     result.success && toast.success("Sign out successfully");
+    document.location.reload();
   }
   return (
     <div>

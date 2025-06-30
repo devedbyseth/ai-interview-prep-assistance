@@ -1,15 +1,27 @@
-"use server"
+"use server";
 
 import React from "react";
 import Image from "next/image";
 import { getCurrentUser, isUserAuthenticated } from "@/actions/auth.actions";
 import AuthButton from "@/components/AuthButton";
 import { redirect } from "next/navigation";
-
+import { cookies } from "next/headers";
 
 const rootLayout = async ({ children }: { children: React.ReactNode }) => {
-  if(!(await isUserAuthenticated())) redirect("/sign-in");
-  const user = await getCurrentUser();
+  // if(!(await isUserAuthenticated())) redirect("/sign-in");
+  const cookieStore = await cookies();
+
+  const respone = await fetch("http://localhost:3000/api/vapi", {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      Cookie: cookieStore.toString(),
+    }
+  });
+
+  let user = await respone.json();
+  user = user.user;
+  
   return (
     <div className="root-layout">
       <nav className="flex justify-between">
@@ -19,7 +31,7 @@ const rootLayout = async ({ children }: { children: React.ReactNode }) => {
         </div>
         <div className="flex gap-4 justify-between items-center">
           <h5 className="text-xl">{user?.name}</h5>
-          <AuthButton user={user}  />
+          <AuthButton user={user} />
         </div>
       </nav>
 
