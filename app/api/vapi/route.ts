@@ -29,6 +29,8 @@ export async function POST(req: Request) {
             model: google("gemini-2.0-flash"),
             prompt,
          })
+        
+        console.log("text from gg api: ", text);
 
         const interview = {
             id: user?.id,
