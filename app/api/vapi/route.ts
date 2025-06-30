@@ -37,7 +37,7 @@ export async function POST(req: Request) {
             techstack,
             type,
             amount,
-            questions: JSON.parse(text),
+            questions: JSON.parse(text.toString()),
         }
 
         await db.collection("interviews").add(interview);
