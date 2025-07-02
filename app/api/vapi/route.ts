@@ -7,7 +7,14 @@ import {  NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    // const body = await req.json();
+    const body= {
+        role: "Software Engineer",
+        level: "Entry Level",
+        techstack: ["nextjs"],
+        type: "Behavioural",
+        amount: 10
+    }
     const { role, level, techstack, type, amount } = body;
 
     const prompt = `Prepare questions for a job interview.
