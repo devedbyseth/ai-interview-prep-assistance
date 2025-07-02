@@ -33,10 +33,10 @@ export async function POST(req: Request) {
     // const user = await getCurrentUser();
     if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { text } = await generateText({
-      model: google("gemini-2.0-flash"),
-      prompt,
-    });
+    // const { text } = await generateText({
+    //   model: google("gemini-2.0-flash"),
+    //   prompt,
+    // });
 
     // let questions: string[] = JSON.parse(text);
 
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         ...body,
         questions
     }
-    await db.collection("interviews").add(interview);
+    // await db.collection("interviews").add(interview);
 
     return NextResponse.json({ questions, message: "Questions generated successfully" }, { status: 200 });
 
