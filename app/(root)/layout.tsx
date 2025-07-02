@@ -4,21 +4,22 @@ import React from "react";
 import Image from "next/image";
 import AuthButton from "@/components/AuthButton";
 import { cookies } from "next/headers";
+import { getCurrentUser } from "@/actions/auth.actions";
 
 const rootLayout = async ({ children }: { children: React.ReactNode }) => {
-  const cookieStore = await cookies();
-  const END_POINT = "/api/user";
-  const URL = process.env.HOSTNAME + END_POINT
-  const response = await fetch(URL, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      Cookie: cookieStore.toString(),
-    }
-  });
+  // const cookieStore = await cookies();
+  // const END_POINT = "/api/user";
+  // const URL = process.env.HOSTNAME + END_POINT
+  // const response = await fetch(URL, {
+  //   method: "GET",
+  //   credentials: "include",
+  //   headers: {
+  //     Cookie: cookieStore.toString(),
+  //   }
+  // });
 
-  let user = await response.json();
-  user = user.user;
+  let user = await getCurrentUser();
+  // user = user.user;
   
   return (
     <div className="root-layout">
