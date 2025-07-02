@@ -1,17 +1,16 @@
-import { google } from '@ai-sdk/google';
+import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { db } from "@/firebase/admin";
-import { getCurrentUser } from '@/actions/auth.actions';
+import { getCurrentUser } from "@/actions/auth.actions";
 
-export async function GET(){
-    const user = await getCurrentUser();
-    return Response.json({status: 200, message: "Success", user});
+export async function GET() {
+  const user = await getCurrentUser();
+  return Response.json({ status: 200, message: "Success", user });
 }
 
-
 export async function POST(req: Request) {
-    const user = await getCurrentUser();
-    const {role, level, techstack, type, amount} = await req.json();
+  try {
+    const { role, level, techstack, type, amount } = await req.json();
     const prompt = `Prepare questions for a job interview.
         The job role is ${role}.
         The job experience level is ${level}.
@@ -23,30 +22,34 @@ export async function POST(req: Request) {
         Return the questions formatted like this: ["Question 1", "Question 2", "Question 3"]
         
         Thank you! <3
-    `
-    if(user){
-        const { text } = await generateText({
-            model: google("gemini-2.0-flash"),
-            prompt,
-         })
-        
-        console.log("text from gg api: ", text);
+    `;
 
-        const interview = {
-            id: user?.id,
-            role,
-            level,
-            techstack,
-            type,
-            amount,
-            questions: JSON.parse(text.toString()),
-        }
+    const user = await getCurrentUser();
 
-        await db.collection("interviews").add(interview);
-        return Response.json({status: 200, message: "Success", interview});
+    if (user) {
+      const { text } = await generateText({
+        model: google("gemini-2.0-flash"),
+        prompt,
+      });
+
+      console.log("text from gg api: ", text);
+
+      const interview = {
+        id: user?.id,
+        role,
+        level,
+        techstack,
+        type,
+        amount,
+        questions: JSON.parse(text.toString()),
+      };
+
+      await db.collection("interviews").add(interview);
+      return Response.json({ status: 200, message: "Success", interview });
+    } else {
+      return Response.json({ status: 500, message: "User not found" });
     }
-    else{
-        return Response.json({status: 500, message: "User not found"})
-    }
-
+  } catch (error) {
+    Response.json({ status: 500, message: "Error", error });
+  }
 }
