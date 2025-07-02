@@ -38,7 +38,9 @@ export async function POST(req: Request) {
       prompt,
     });
 
-    let questions: string[] = JSON.parse(text);
+    // let questions: string[] = JSON.parse(text);
+
+    let questions = ["Question 1", "Question 2", "Question 3"]
 
     const interview = {
         id: user?.id,
