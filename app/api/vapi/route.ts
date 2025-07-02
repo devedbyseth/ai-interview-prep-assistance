@@ -37,7 +37,6 @@ export async function POST(req: Request) {
         ...body,
         questions
     }
-
     await db.collection("interviews").add(interview);
 
     return NextResponse.json({ questions, message: "Questions generated successfully" }, { status: 200 });
