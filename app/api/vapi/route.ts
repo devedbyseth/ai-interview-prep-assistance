@@ -2,6 +2,7 @@ import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { getCurrentUser } from "@/actions/auth.actions";
 import { db } from "@/firebase/admin";
+import {  NextResponse } from "next/server";
 
 
 export async function POST(req: Request) {
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
       Thank you! <3
     `;
     const user = await getCurrentUser();
-    if (!user) return Response.json({ message: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const { text } = await generateText({
       model: google("gemini-2.0-flash"),
@@ -39,10 +40,10 @@ export async function POST(req: Request) {
 
     await db.collection("interviews").add(interview);
 
-    return Response.json({ questions, message: "Questions generated successfully" }, { status: 200 });
+    return NextResponse.json({ questions, message: "Questions generated successfully" }, { status: 200 });
 
   } catch (error) {
     console.log(error);
-    return Response.json({ message: "Something went wrong" }, { status: 500 });
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }
