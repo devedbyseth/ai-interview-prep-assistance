@@ -18,7 +18,8 @@ const rootLayout = async ({ children }: { children: React.ReactNode }) => {
   //   }
   // });
 
-  let user = await getCurrentUser();
+  // let user = await getCurrentUser();
+  let user = {name: "USER"}
   // user = user.user;
   
   return (
