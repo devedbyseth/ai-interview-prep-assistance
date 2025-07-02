@@ -2,16 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
-import { getCurrentUser, isUserAuthenticated } from "@/actions/auth.actions";
 import AuthButton from "@/components/AuthButton";
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 const rootLayout = async ({ children }: { children: React.ReactNode }) => {
-  // if(!(await isUserAuthenticated())) redirect("/sign-in");
   const cookieStore = await cookies();
-
-  const respone = await fetch("http://localhost:3000/api/vapi", {
+  const END_POINT = "/api/user";
+  const URL = process.env.HOSTNAME + END_POINT
+  const response = await fetch(URL, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -19,7 +17,7 @@ const rootLayout = async ({ children }: { children: React.ReactNode }) => {
     }
   });
 
-  let user = await respone.json();
+  let user = await response.json();
   user = user.user;
   
   return (

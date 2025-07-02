@@ -1,35 +1,13 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
-import { db } from "@/firebase/admin";
 import { getCurrentUser } from "@/actions/auth.actions";
-import { cookies } from "next/headers";
+import { db } from "@/firebase/admin";
 
-// ✅ GET route
-export async function GET() {
-    let user = {
-      name: "USER",
-      id: "USER"
-    }
-  // const user = await getCurrentUser();
-  console.log("User found?", !!user);
 
-  if (user) {
-    return Response.json(
-      { status: 202, message: "Success", user },
-      { status: 202 }
-    );
-  }
-
-  return Response.json(
-    { status: 404, message: "User not found" },
-    { status: 404 }
-  );
-}
-
-// ✅ POST route
 export async function POST(req: Request) {
   try {
-    const { role, level, techstack, type, amount } = await req.json();
+    const body = await req.json();
+    const { role, level, techstack, type, amount } = body;
 
     const prompt = `Prepare questions for a job interview.
       The job role is ${role}.
@@ -43,67 +21,28 @@ export async function POST(req: Request) {
       
       Thank you! <3
     `;
-
-    // const user = await getCurrentUser();
-    let user = {
-      name: "USER",
-      id: "USER"
-    }
-    if (!user) {
-      return Response.json(
-        { status: 401, message: "Unauthorized: User not found" },
-        { status: 401 }
-      );
-    }
+    const user = await getCurrentUser();
+    if (!user) return Response.json({ message: "Unauthorized" }, { status: 401 });
 
     const { text } = await generateText({
       model: google("gemini-2.0-flash"),
       prompt,
     });
 
-    console.log("Response from Gemini:", text);
-
-    let questions: string[] = [];
-    try {
-      // ✅ Only attempt parse if text is valid
-      if (typeof text === "string" && text.trim().startsWith("[")) {
-        questions = JSON.parse(text.trim());
-      } else {
-        console.warn("Invalid AI response format:", text);
-        return Response.json(
-          { status: 500, message: "AI response is not valid JSON array", raw: text },
-          { status: 500 }
-        );
-      }
-    } catch (error) {
-      console.error("Error parsing Gemini response:", error);
-      return Response.json(
-        { status: 500, message: "Error parsing AI output", raw: text },
-        { status: 500 }
-      );
-    }
+    let questions: string[] = JSON.parse(text);
 
     const interview = {
-      id: user.id,
-      role,
-      level,
-      techstack,
-      type,
-      amount,
-      questions,
-    };
+        id: user?.id,
+        ...body,
+        questions
+    }
 
     await db.collection("interviews").add(interview);
 
-    return Response.json(
-      { status: 200, message: "Success", interview },
-      { status: 200 }
-    );
+    return Response.json({ questions, message: "Questions generated successfully" }, { status: 200 });
+
   } catch (error) {
-    console.error("Unexpected error in POST handler:", error);
-    return Response.json(
-      { status: 500, message: "Server error", error: error?.toString() },
-      { status: 500 }
-    );
+    console.log(error);
+    return Response.json({ message: "Something went wrong" }, { status: 500 });
   }
 }
