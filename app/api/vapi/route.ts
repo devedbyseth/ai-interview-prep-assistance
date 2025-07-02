@@ -5,7 +5,9 @@ import { getCurrentUser } from "@/actions/auth.actions";
 
 export async function GET() {
   const user = await getCurrentUser();
-  return Response.json({ status: 200, message: "Success", user });
+  console.log(!user);
+  if(user) return Response.json({ status: 202, message: "Success", user }, { status: 200 });
+  return Response.json({status: 404, message: "User not found"}, { status: 404 });
 }
 
 export async function POST(req: Request) {
@@ -33,7 +35,13 @@ export async function POST(req: Request) {
       });
 
       console.log("text from gg api: ", text);
-
+      let questions: String[] = [];
+      try {
+        questions = JSON.parse(text.toString());
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        return Response.json({ status: 500, message: "Error parsing JSON", error })
+      }
       const interview = {
         id: user?.id,
         role,
@@ -41,15 +49,15 @@ export async function POST(req: Request) {
         techstack,
         type,
         amount,
-        questions: JSON.parse(text.toString()),
+        questions
       };
 
       await db.collection("interviews").add(interview);
-      return Response.json({ status: 200, message: "Success", interview });
+      return Response.json({ status: 200, message: "Success", interview }, {status: 200});
     } else {
-      return Response.json({ status: 500, message: "User not found" });
+      return Response.json({ status: 500, message: "User not found" }, {status: 500});
     }
   } catch (error) {
-    Response.json({ status: 500, message: "Error", error });
+    return Response.json({ status: 500, message: "Error", error }, {status: 500});
   }
 }
