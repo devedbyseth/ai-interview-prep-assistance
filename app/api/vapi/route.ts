@@ -2,10 +2,15 @@ import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { db } from "@/firebase/admin";
 import { getCurrentUser } from "@/actions/auth.actions";
+import { cookies } from "next/headers";
 
 // ✅ GET route
 export async function GET() {
-  const user = await getCurrentUser();
+    let user = {
+      name: "USER",
+      id: "USER"
+    }
+  // const user = await getCurrentUser();
   console.log("User found?", !!user);
 
   if (user) {
@@ -39,7 +44,11 @@ export async function POST(req: Request) {
       Thank you! <3
     `;
 
-    const user = await getCurrentUser();
+    // const user = await getCurrentUser();
+    let user = {
+      name: "USER",
+      id: "USER"
+    }
     if (!user) {
       return Response.json(
         { status: 401, message: "Unauthorized: User not found" },
